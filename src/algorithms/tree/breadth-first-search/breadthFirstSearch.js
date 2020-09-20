@@ -1,58 +1,26 @@
 import Queue from '../../../data-structures/queue/Queue';
 
-/**
- * @typedef {Object} Callbacks
- * @property {function(node: BinaryTreeNode, child: BinaryTreeNode): boolean} allowTraversal -
- *   Determines whether DFS should traverse from the node to its child.
- * @property {function(node: BinaryTreeNode)} enterNode - Called when DFS enters the node.
- * @property {function(node: BinaryTreeNode)} leaveNode - Called when DFS leaves the node.
- */
+export default function breadthFirstSearch(node, callbacks = {}) {
+  const enterNode = callbacks.enterNode || (() => {});
+  const leaveNode = callbacks.leaveNode || (() => {});
+  const allowTraversal = callbacks.allowTraversal || (() => (true));
 
-/**
- * @param {Callbacks} [callbacks]
- * @returns {Callbacks}
- */
-function initCallbacks(callbacks = {}) {
-  const initiatedCallback = callbacks;
+  const queue = new Queue();
 
-  const stubCallback = () => {};
-  const defaultAllowTraversal = () => true;
+  queue.enqueue(node);
 
-  initiatedCallback.allowTraversal = callbacks.allowTraversal || defaultAllowTraversal;
-  initiatedCallback.enterNode = callbacks.enterNode || stubCallback;
-  initiatedCallback.leaveNode = callbacks.leaveNode || stubCallback;
+  while (!queue.isEmpty()) {
+    const current = queue.dequeue();
+    enterNode(current);
 
-  return initiatedCallback;
-}
-
-/**
- * @param {BinaryTreeNode} rootNode
- * @param {Callbacks} [originalCallbacks]
- */
-export default function breadthFirstSearch(rootNode, originalCallbacks) {
-  const callbacks = initCallbacks(originalCallbacks);
-  const nodeQueue = new Queue();
-
-  // Do initial queue setup.
-  nodeQueue.enqueue(rootNode);
-
-  while (!nodeQueue.isEmpty()) {
-    const currentNode = nodeQueue.dequeue();
-
-    callbacks.enterNode(currentNode);
-
-    // Add all children to the queue for future traversals.
-
-    // Traverse left branch.
-    if (currentNode.left && callbacks.allowTraversal(currentNode, currentNode.left)) {
-      nodeQueue.enqueue(currentNode.left);
+    if (current.left && allowTraversal(current, current.left)) {
+      queue.enqueue(current.left);
     }
 
-    // Traverse right branch.
-    if (currentNode.right && callbacks.allowTraversal(currentNode, currentNode.right)) {
-      nodeQueue.enqueue(currentNode.right);
+    if (current.right && allowTraversal(current, current.right)) {
+      queue.enqueue(current.right);
     }
 
-    callbacks.leaveNode(currentNode);
+    leaveNode(current);
   }
 }

@@ -2,7 +2,7 @@ import BinaryTreeNode from '../../../../data-structures/tree/BinaryTreeNode';
 import breadthFirstSearch from '../breadthFirstSearch';
 
 describe('breadthFirstSearch', () => {
-  it('should perform DFS operation on tree', () => {
+  it('should perform BFS operation on tree', () => {
     const nodeA = new BinaryTreeNode('A');
     const nodeB = new BinaryTreeNode('B');
     const nodeC = new BinaryTreeNode('C');
@@ -22,7 +22,7 @@ describe('breadthFirstSearch', () => {
     const leaveNodeCallback = jest.fn();
 
     // Traverse tree without callbacks first to check default ones.
-    breadthFirstSearch(nodeA);
+    // breadthFirstSearch(nodeA);
 
     // Traverse tree with callbacks.
     breadthFirstSearch(nodeA, {
@@ -98,5 +98,46 @@ describe('breadthFirstSearch', () => {
     expect(leaveNodeCallback.mock.calls[1][0].value).toEqual('C');
     expect(leaveNodeCallback.mock.calls[2][0].value).toEqual('F');
     expect(leaveNodeCallback.mock.calls[3][0].value).toEqual('G');
+  });
+
+  it('lets me know if it find the value I am looking for', () => {
+    const nodeA = new BinaryTreeNode('A');
+    const nodeB = new BinaryTreeNode('B');
+    const nodeC = new BinaryTreeNode('C');
+    const nodeD = new BinaryTreeNode('D');
+    const nodeE = new BinaryTreeNode('E');
+    const nodeF = new BinaryTreeNode('F');
+    const nodeG = new BinaryTreeNode('G');
+
+    nodeA.setLeft(nodeB).setRight(nodeC);
+    nodeB.setLeft(nodeD).setRight(nodeE);
+    nodeC.setLeft(nodeF).setRight(nodeG);
+
+    // In-order traversing.
+    expect(nodeA.toString()).toBe('D,B,E,A,F,C,G');
+
+    const leaveNodeCallback = jest.fn();
+
+    // Traverse tree without callbacks first to check default ones.
+    breadthFirstSearch(nodeA);
+
+    // Traverse tree with callbacks.
+    let valueFound = false;
+    const searchTerm = 'F';
+    const valuesEncountered = [];
+    breadthFirstSearch(nodeA, {
+      allowTraversal: () => {
+        return !valueFound; // Stop when we found what we wanted.
+      },
+      enterNode: (node) => {
+        valuesEncountered.push(node.value);
+        if (node.value === searchTerm) {
+          valueFound = true;
+        }
+      },
+      leaveNode: leaveNodeCallback,
+    });
+
+    expect(valueFound).toBeTruthy();
   });
 });
